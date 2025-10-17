@@ -1,0 +1,20 @@
+# Go build artifacts
+hermyx
+*.exe
+*.test
+
+# Vendor and IDE files
+vendor/
+.vscode/
+.idea/
+
+# Git
+.git
+
+# OS files
+*.DS_Store
+thumbs.db
+
+# Tests, coverage
+coverage.out
+*.prof

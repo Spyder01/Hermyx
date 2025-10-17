@@ -2,6 +2,10 @@
 
 [![Open Project Lab Submission](https://img.shields.io/badge/Open%20Project%20Lab-Submission-blue?logo=github)](https://github.com/spyder01/open-project-lab)
 
+# 🌀 Hermyx
+
+[![Open Project Lab Submission](https://img.shields.io/badge/Open%20Project%20Lab-Submission-blue?logo=github)](https://github.com/spyder01/open-project-lab)
+
 &#x20; &#x20;
 
 **Hermyx** is a blazing-fast, minimal reverse proxy with intelligent caching. Built on top of [`fasthttp`](https://github.com/valyala/fasthttp), it offers route-specific caching rules, graceful shutdown, flexible logging, and a clean YAML configuration — perfect for microservices, edge routing, or lightweight API gateways.
@@ -23,9 +27,9 @@ We have issues labeled **`good first issue`**, **`help wanted`**, and **`hacktob
 1. **Star** the repo to show support 🌟  
 2. **Fork** this repository  
 3. **Pick an issue** labeled:
-   - `good first issue` → beginner-friendly
-   - `help wanted` → needs extra attention
-   - `enhancement` → new features
+  - `good first issue` → beginner-friendly
+  - `help wanted` → needs extra attention
+  - `enhancement` → new features
 4. **Create a branch** for your changes  
 5. **Submit a Pull Request** with a clear description  
 6. Once merged, your contribution will count toward Hacktoberfest!
@@ -37,11 +41,6 @@ We have issues labeled **`good first issue`**, **`help wanted`**, and **`hacktob
 - Fix documentation typos or improve examples  
 - Add small CLI enhancements (`--version`, better help text)  
 - Contribute disk/Redis cache optimizations  
-
----
-
-## 🚀 Features
-
 * ⚡ **High Performance**: Powered by `fasthttp`, optimized for low-latency proxying.
 * 🎯 **Per-Route Caching & Proxying**: Control cache behavior and target routing at the route level.
 * 🧠 **Pluggable Caching Backends**: Choose between in-memory, disk-based, or Redis caching.
@@ -63,7 +62,7 @@ For now:
 ```bash
 git clone https://github.com/your-username/hermyx.git
 cd hermyx
-go build -o hermyx ./cmd/go
+go build -o hermyx ./cmd
 ```
 
 ---
@@ -154,36 +153,30 @@ cache:
   ttl: 5m
   capacity: 1000
   maxContentSize: 1048576
-  redis:
-    address: "redis:6379"
-    password: ""
-    db: 0
-    defaultTtl: 10s
-    namespace: "hermyx:"
-  keyConfig:
-    type: ["path", "method", "query", "header"]
-    headers:
-      - key: "X-Request-User"
-      - key: "X-Device-ID"
-    excludeMethods: ["post", "put"]
+  Alternatively use `docker-compose`:
 
-routes:
-  - name: "user-api"
-    path: "^/api/users"
-    target: "localhost:3000"
-    include: [".*"]
-    exclude: ["^/api/users/private"]
-    cache:
-      enabled: true
-      ttl: 2m
-      keyConfig:
-        type: ["path", "query", "header"]
-        headers:
-          - key: "Authorization"
-        excludeMethods: ["post"]
-```
+  ```bash
+  docker-compose up --build
+  ```
 
----
+  Notes:
+  - The container exposes port `8080` by default. You can map it to any host port using `-p` or via `docker-compose`.
+  - Mount your config directory to `/configs` and storage to `/data` to persist caches and PID files.
+  - Override the default command or pass `down`/`init` commands as needed, for example:
+
+  ```bash
+  docker run --rm hermyx:latest down --config /configs/hermyx.config.yaml
+  ```
+
+  Advanced:
+  - The `Dockerfile` uses a multi-stage build to keep the runtime image small and a non-root user for security.
+  - To build for ARM (multi-arch) use Docker Buildx and specify platforms, for example:
+
+  ```bash
+  docker buildx build --platform linux/amd64,linux/arm64 -t youruser/hermyx:latest --push .
+  ```
+
+  If you'd like, I can also add a GitHub Action to build and push multi-arch images to Docker Hub.
 
 ## 🔧 Logging Configuration Example
 
@@ -333,5 +326,84 @@ PRs, bug reports, and ideas are welcome! Just fork and open a PR.
 ## 📄 License
 
 This project is licensed under the [MIT License](./LICENSE).
+
+---
+
+## 🐳 Docker
+
+Hermyx can be containerized to simplify deployment and avoid OS-specific build steps. The repository includes a multi-stage `Dockerfile` and a `docker-compose.yml` for local development.
+
+Build the image locally (recommended):
+
+```bash
+docker build -t hermyx:latest .
+```
+
+Run with a config file mounted and a storage directory for cache/pid files:
+
+```bash
+docker run --rm -p 8080:8080 \
+  -v $(pwd)/tests:/configs:ro \
+  -v $(pwd)/storage:/data \
+  -e HERMYX_CONFIG=/configs/hermyx.config.yaml \
+  -e HERMYX_STORAGE=/data \
+  hermyx:latest
+```
+
+Alternatively use `docker-compose`:
+
+```bash
+docker-compose up --build
+```
+
+Notes:
+- The container exposes port `8080` by default. You can map it to any host port using `-p` or via `docker-compose`.
+- Mount your config directory to `/configs` and storage to `/data` to persist caches and PID files.
+- Override the default command or pass `down`/`init` commands as needed, for example:
+
+```bash
+docker run --rm hermyx:latest down --config /configs/hermyx.config.yaml
+```
+
+Advanced:
+- The `Dockerfile` uses a multi-stage build to keep the runtime image small and a non-root user for security.
+- To build for ARM (multi-arch) use Docker Buildx and specify platforms, for example:
+
+```bash
+docker buildx build --platform linux/amd64,linux/arm64 -t youruser/hermyx:latest --push .
+```
+
+If you'd like, I can also add a GitHub Action to build and push multi-arch images to Docker Hub.
+
+### Docker Compose: Redis example
+
+The included `docker-compose.yml` includes a `redis` service for testing the `redis` cache backend. It exposes port `6379` and stores data in a named volume `redis-data`.
+
+To run the full stack locally:
+
+```bash
+docker-compose up --build
+```
+
+The `tests/hermyx.config.yaml` included in the repo references `redis:6379` so the example compose works out of the box.
+
+### Publishing images (optional)
+
+I added a GitHub Actions workflow `publish.yml` that will build and push multi-arch images to Docker Hub when you push a tag like `v1.0.0`.
+
+To enable publishing:
+
+1. Create a Docker Hub account and repository `youruser/hermyx`.
+2. In your GitHub repository settings, add two secrets:
+  - `DOCKERHUB_USERNAME` — your Docker Hub username
+  - `DOCKERHUB_TOKEN` — a Docker Hub access token (not your password)
+3. Push a tag to trigger publishing:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+The workflow will build images for `linux/amd64` and `linux/arm64` and push them to Docker Hub.
 
 
