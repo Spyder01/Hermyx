@@ -1,0 +1,34 @@
+services:
+  hermyx:
+    build: .
+    image: hermyx:local
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - HERMYX_CONFIG=/configs/hermyx.config.yaml
+      - HERMYX_STORAGE=/data
+      - REDIS_HOST=redis
+    volumes:
+      - ./tests:/configs:ro
+      - ./storage:/data
+    depends_on:
+      - redis
+    networks:
+      - hermyx-net
+  redis:
+    image: redis:7.0-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - hermyx-net
+
+networks:
+  hermyx-net:
+    driver: bridge
+
+volumes:
+  redis-data:
