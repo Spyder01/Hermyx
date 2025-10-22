@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"hermyx/pkg/cache"
 	"hermyx/pkg/cachemanager"
+	"hermyx/pkg/middleware"
 	"hermyx/pkg/models"
 	"hermyx/pkg/utils/fs"
 	"hermyx/pkg/utils/hash"
@@ -27,13 +28,14 @@ type compiledRoute struct {
 }
 
 type HermyxEngine struct {
-	config         *models.HermyxConfig
-	logger         *logger.Logger
-	cacheManager   *cachemanager.CacheManager
-	compiledRoutes []compiledRoute
-	configPath     string
-	pid            uint64
-	hostClients    map[string]*fasthttp.HostClient
+	config          *models.HermyxConfig
+	logger          *logger.Logger
+	cacheManager    *cachemanager.CacheManager
+	compiledRoutes  []compiledRoute
+	configPath      string
+	pid             uint64
+	hostClients     map[string]*fasthttp.HostClient
+	MiddlewareChain *middleware.Chain
 }
 
 func InstantiateHermyxEngine(configPath string) *HermyxEngine {
@@ -136,12 +138,13 @@ func InstantiateHermyxEngine(configPath string) *HermyxEngine {
 	cacheManager := cachemanager.NewCacheManager(cache_)
 
 	engine := &HermyxEngine{
-		config:       &config,
-		logger:       logger_,
-		cacheManager: cacheManager,
-		configPath:   configPath,
-		pid:          uint64(os.Getpid()),
-		hostClients:  make(map[string]*fasthttp.HostClient),
+		config:          &config,
+		logger:          logger_,
+		cacheManager:    cacheManager,
+		configPath:      configPath,
+		pid:             uint64(os.Getpid()),
+		hostClients:     make(map[string]*fasthttp.HostClient),
+		MiddlewareChain: middleware.NewChain(),
 	}
 
 	engine.compileRoutes()

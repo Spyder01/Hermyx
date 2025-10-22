@@ -44,7 +44,7 @@ func (engine *HermyxEngine) Run() {
 	engine.logger.Info(fmt.Sprintf("Hermyx engine starting on %s...", addr))
 
 	server := &fasthttp.Server{
-		Handler:          engine.handleRequest,
+		Handler:          engine.MiddlewareChain.Handle(engine.handleRequest),
 		MaxConnsPerIP:    0,
 		DisableKeepalive: false,
 	}
