@@ -12,7 +12,7 @@ type Chain struct {
 }
 
 func (c *Chain) Use(middleware *LoggingMiddleware) {
-	panic("unimplemented")
+	c.middlewares = append(c.middlewares, middleware)
 }
 
 func NewChain(m ...Middleware) *Chain {

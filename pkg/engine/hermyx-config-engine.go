@@ -138,12 +138,13 @@ func InstantiateHermyxEngine(configPath string) *HermyxEngine {
 	cacheManager := cachemanager.NewCacheManager(cache_)
 
 	engine := &HermyxEngine{
-		config:       &config,
-		logger:       logger_,
-		cacheManager: cacheManager,
-		configPath:   configPath,
-		pid:          uint64(os.Getpid()),
-		hostClients:  make(map[string]*fasthttp.HostClient),
+		config:          &config,
+		logger:          logger_,
+		cacheManager:    cacheManager,
+		configPath:      configPath,
+		pid:             uint64(os.Getpid()),
+		hostClients:     make(map[string]*fasthttp.HostClient),
+		MiddlewareChain: middleware.NewChain(),
 	}
 
 	engine.compileRoutes()

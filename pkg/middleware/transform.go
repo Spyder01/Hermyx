@@ -16,7 +16,7 @@ func NewTransformMiddleware(logger *logger.Logger) *TransformMiddleware {
 
 func (t *TransformMiddleware) BeforeRequest(ctx *fasthttp.RequestCtx) error {
 	if len(ctx.Request.Header.Peek("X-Forwarded-For")) == 0 {
-		ctx.Request.Header.Set("X-Forwarded-For", string(ctx.RemoteAddr().String()))
+		ctx.Request.Header.Set("X-Forwarded-For", ctx.RemoteAddr().String())
 		t.logger.Debug("Transform middleware: set X-Forwarded-For")
 	}
 	return nil
